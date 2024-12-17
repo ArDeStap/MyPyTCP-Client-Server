@@ -3,9 +3,16 @@ import socket
 # from . import Commands
 import requests
 import time
+import sqlite3
 
 HOST = '127.0.0.1'
 PORT = 65432
+
+try:
+    connection = sqlite3.connect('DataBase/Server_DB.db')
+    cursor = connection.cursor()
+except:
+    print('DATABASE ERROR')
 
 def weatherAPICall(CityName):
     WEATHER_API_KEY = f'https://api.openweathermap.org/data/2.5/weather?q={CityName}&appid=5c995a7ee47c74c508a39c429c298aee&units=metric'
@@ -54,9 +61,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     conn.sendall(returnString.encode())
                 else:
                     try:
-                        JasonData = json.loads(data.decode().lower())
-                        if JasonData['name']:
-                            conn.sendall(f'hello, {JasonData['name']}'.encode())
+                        JasonData = json.loads(data.decode())
+                        if 'name' in JasonData:
+                            conn.sendall(f'Hello, {JasonData['name']}'.encode())
+                        elif 'authorization' in JasonData:
+                            query = cursor.execute(f'SELECT id FROM users WHERE userLogin = "{JasonData['authorization'][0]}" AND userPassword = "{JasonData['authorization'][1]}"')
+                            print(query.fetchone()[0])
+                        else:
+                            conn.sendall('Wrong Data'.encode()) 
                     except ValueError as e:
                         conn.sendall(f"I don't Recognize the command, {e}".encode())
 
