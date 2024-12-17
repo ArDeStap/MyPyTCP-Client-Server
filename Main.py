@@ -55,6 +55,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 else:
                     try:
                         JasonData = json.loads(data.decode().lower())
+                        if JasonData['name']:
+                            conn.sendall(f'hello, {JasonData['name']}'.encode())
                     except ValueError as e:
                         conn.sendall(f"I don't Recognize the command, {e}".encode())
 
