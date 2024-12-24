@@ -1,7 +1,7 @@
 import json
 import socket
-from ExtCommands.TextCommands import *
-from ExtCommands.JSONCommands import *
+from ExtCommands import TextCommands, JSONCommands
+
 
 
 HOST = '127.0.0.1'
