@@ -1,7 +1,8 @@
 import json
 import socket
-from ExtCommands import TextCommands, JSONCommands
-
+from ExtCommands import TextCommands
+from ExtCommands.JSONCommands import processCommand
+from ExtCommands import *
 
 
 HOST = '127.0.0.1'
@@ -32,7 +33,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 
                 try:
                     JasonData = json.loads(data.decode())
-                    CommandResult = JSONCommands.processCommand(JasonData)
+                    CommandResult = processCommand(JasonData)
                     conn.sendall(CommandResult)
                 except ValueError as e:
                     CommandResult = TextCommands.ProcessCommand(data)
