@@ -5,9 +5,7 @@ def sendServerRequest(msg):
     server_address = ('127.0.0.1', 65432)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        CancelConnection = False
     # Шаг 2: Подключение к серверу
-        message = input('message to TCP Server: ')
         try:
             
             client_socket.connect(server_address)
@@ -20,7 +18,7 @@ def sendServerRequest(msg):
         except:
             client_socket.close()
 
-
+msg = ''
 
 while msg.lower() != "exit":
     msg = input('Your message to TCP SERVER ')
