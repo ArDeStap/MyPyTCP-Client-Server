@@ -10,7 +10,7 @@ def sendServerRequest(msg):
             
             client_socket.connect(server_address)
                 # Шаг 3: Отправка и получение данных
-            client_socket.sendall(message.encode())
+            client_socket.sendall(msg.encode())
                 # Ожидание ответа от сервера
             data = client_socket.recv(131072)
             print(f"Received {data.decode()} from the server")
