@@ -28,7 +28,6 @@ def sqlite_query_to_json(query, args=(), one=False):
 
 def processCommand(JSONData):
 
-    CurrentDateTime = str(datetime.today().strftime('%Y%m%d %H%M%S')) 
     if 'name' in JSONData:
         return f'Hello, {JSONData['name']}'.encode()
     elif 'authorization' in JSONData.keys():
@@ -36,26 +35,22 @@ def processCommand(JSONData):
             return returnJSON(0, JSONData).encode()
         ClientAuthorization = sqlite_query_to_json(f'SELECT * FROM users WHERE userLogin = "{JSONData["authorization"][0]}" AND userPassword = "{JSONData['authorization'][1]}"', (), True)
         if ClientAuthorization != "None" and "Query_exception" not in ClientAuthorization.keys():
+            CurrentDateTime = datetime.today().strftime('%Y%m%d %H%M%S') 
             SessionQuery = sqlite_query_to_json(f'SELECT * FROM sessions WHERE session_id = "{JSONData["Connection"]}"', (), True)
             if SessionQuery == "None":
-                SessionUpdate = sqlite_query_commit(f'INSERT INTO sessions (session_id, user_id, IsActive, session_data) VALUES ("{JSONData['Connection']}", "{ClientAuthorization["id"]}", 1, "{CurrentDateTime}")', ())
+                SessionUpdate = sqlite_query_commit(f'INSERT INTO sessions (user_id, IsActive, session_data) VALUES ("{ClientAuthorization["id"]}", 1, "{CurrentDateTime}")', ())
                 SessionUpdate = { "session_status": SessionUpdate, 
                     "user_id": ClientAuthorization["id"]}
                 return ProcessReqExcept(SessionUpdate)   
             elif SessionQuery["IsActive"] == 1:
                 SessionQuery["session_exception"] = "Session already active"
-                return returnJSON(1, SessionQuery).encode()
+                return returnJSON(1, SessionQuery)
             elif SessionQuery["IsActive"] == 0:
-                if SessionQuery['user_id'] == ClientAuthorization['id']:
-                    return ProcessReqExcept(sqlite_query_commit(f'UPDATE sessions SET IsActive = 1, session_data = "{CurrentDateTime}" WHERE user_id = {ClientAuthorization["id"]} AND session_id = "{JSONData["Connection"]}"', ()))
-                else:
-                    return ProcessReqExcept(sqlite_query_commit(f'INSERT INTO sessions (session_id, user_id, IsActive, session_data) VALUES ("{JSONData['Connection']}", "{ClientAuthorization["id"]}", 1, "{CurrentDateTime}")', ()))   
-        else:   
+                return ProcessReqExcept(sqlite_query_commit(f'UPDATE sessions SET IsActive = 1, session_data = {CurrentDateTime} WHERE user_id = {ClientAuthorization["id"]} AND session_id = "{JSONData["Connection"]}"', ()))   
+        else:
             return ProcessReqExcept(ClientAuthorization)           
     elif 'end_session' in JSONData.keys():
-        return ProcessReqExcept(sqlite_query_commit(f'UPDATE sessions SET IsActive = 0, session_data = "{CurrentDateTime}" WHERE user_id = {JSONData["end_session"]} AND session_id = "{JSONData["Connection"]}"', ()))
-    elif 'registration' in JSONData.keys():
-        UserToRegister = JSONData['registration']    
+        return ProcessReqExcept(sqlite_query_commit(f'UPDATE sessions SET IsActive = 0 WHERE user_id = "{JSONData["get_session"]}" AND session_id = "{JSONData["Connection"]}"', (), True))
     else:
         return returnJSON(0, JSONData).encode() 
 
